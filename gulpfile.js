@@ -6,11 +6,13 @@ var gutil = requrie('gulp-util');
 var livereload = require('gulp-livereload');
 var connect = require('connect');
 
+var rename = require('gulp-rename');
+
 var browserify = require('browserify');
 var watchify = require('watchify');
 var es6ify = require('es6ify');
 var reactify = requrie('reactify');
-var soure = require('vinyl-source-stream');
+var source = require('vinyl-source-stream');
 
 var dist = 'dist';
 
@@ -36,8 +38,25 @@ var scriptCompile = function(watch){
   };
 
   var bundler = watch ? watchify(entryFile) : browserify(entryFile);
+  bundler.require(requireFiles)
+    .transform(reactify)
+    .transform(es6ify.configure(/.jsx/));
 
+  var rebundle = function(){
+    var stream = bundler.bundle({debug: true});
 
+    stream.on('error', function(error){
+      console.log(error);
+    });
+    stream = stream.pipe(source(entryFile));
+    stream.pipe(rename('app.js'));
+
+    stream.pipe(gulp.dest('dist/bundle'));
+  };
+
+  bundler.on('update', rebundle);
+
+  return rebundle();
 };
 
 // this currently is broken/does nothing (will fix in future)
