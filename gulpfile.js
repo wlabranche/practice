@@ -78,7 +78,7 @@ gulp.task( 'html', function(){
 });
 
 gulp.task( 'default', [ 'vendor', 'server' ], function(){
-  var LRServer = liveReload( liveRPort );
+  var LRServer = livereload( liveRPort );
   var reloadPage = function( event ){
     LRServer.changed( event.path );
   };
