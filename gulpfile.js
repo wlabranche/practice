@@ -61,18 +61,6 @@ var scriptCompile = function( watch ){
   return rebundle();
 };
 
-var startWatch = function(files, task){
-  if ( typeof task === 'string' ){
-    gulp.start( task );
-    gulp.watch( files, [task] );
-  } else {
-    task.map( function(taskItem) {
-      gulp.start( taskItem );
-    } );
-    gulp.watch( files, task );
-  }
-};
-
 gulp.task( 'server', function( next ){
   var server = connect();
   server.use( connect.static( dist )).listen( port, next );
@@ -89,4 +77,19 @@ gulp.task( 'html', function(){
     .pipe( gulp.dest( htmlBuild ));
 });
 
+gulp.task( 'default', [ 'vendor', 'server' ], function(){
+  var LRServer = liveReload( liveRPort );
+  var reloadPage = function( event ){
+    LRServer.changed( event.path );
+  };
+  
+  var startWatch = function( files, task ){
+    gulp.start( task );
+    gulp.watch( files, [ task ] );
+  };
 
+  scriptCompile( true );
+  startWatch( htmlFiles, 'html' );
+
+  gulp.watch( dist + '/**/*.js', reloadPage );
+} );
