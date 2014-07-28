@@ -25,5 +25,10 @@ var jsxFiles = 'app/jsx/**/*.jsx';
 // this currently is broken/does nothing (will fix in future)
 gulp.task('vendor', function(){
   return gulp.src()
-    .pipe();
+    .pipe(gulp.dest());
+});
+
+gulp.task('html', function(){
+  return gulp.src(htmlFiles)
+    .pipe(gulp.dest(htmlBuild));
 });
