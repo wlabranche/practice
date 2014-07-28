@@ -1,18 +1,18 @@
 'use strict';
 
-var gulp = require('gulp');
-var gutil = requrie('gulp-util');
+var gulp = require( 'gulp' );
+var gutil = requrie( 'gulp-util' );
 
-var livereload = require('gulp-livereload');
-var connect = require('connect');
+var livereload = require( 'gulp-livereload' );
+var connect = require( 'connect' );
 
-var rename = require('gulp-rename');
+var rename = require( 'gulp-rename' );
 
-var browserify = require('browserify');
-var watchify = require('watchify');
-var es6ify = require('es6ify');
-var reactify = requrie('reactify');
-var source = require('vinyl-source-stream');
+var browserify = require( 'browserify' );
+var watchify = require( 'watchify' );
+var es6ify = require( 'es6ify' );
+var reactify = requrie( 'reactify' );
+var source = require( 'vinyl-source-stream' );
 
 var dist = 'dist';
 
@@ -20,6 +20,10 @@ var htmlFiles = 'app/**/*.html';
 var htmlBuild = dist;
 
 var jsxFiles = 'app/jsx/**/*.jsx';
+
+// server setup
+var port = 8123;
+var liveRPort = 65432;
 
 // create paths here
 var vendorFiles = [
@@ -29,45 +33,60 @@ var vendorBuild = dist + '/vendor';
 var requireFiles = './node_modules/react/react.js';
 
 // general compile function
-var scriptCompile = function(watch){
-  gutil.log('browserification has begun...');
-
+var scriptCompile = function( watch ){
+  gutil.log( 'browserification has begun...' );
   var entryFile = './app/jsx/app.jsx';
   es6ify.tracurOverrides = {
     experimental: true
   };
-
-  var bundler = watch ? watchify(entryFile) : browserify(entryFile);
-  bundler.require(requireFiles)
-    .transform(reactify)
-    .transform(es6ify.configure(/.jsx/));
+  var bundler = watch ? watchify( entryFile ) : browserify( entryFile );
+  bundler.require( requireFiles )
+    .transform( reactify )
+    .transform( es6ify.configure(/.jsx/) );
 
   var rebundle = function(){
-    var stream = bundler.bundle({debug: true});
-
-    stream.on('error', function(error){
-      console.log(error);
+    var stream = bundler.bundle({
+      debug: true
     });
-    stream = stream.pipe(source(entryFile));
-    stream.pipe(rename('app.js'));
 
-    stream.pipe(gulp.dest('dist/bundle'));
+    stream.on( 'error', function( error ){
+      console.log( error );
+    });
+    stream = stream.pipe( source( entryFile ) );
+    stream.pipe( rename('app.js') );
+    stream.pipe( gulp.dest( 'dist/bundle' ));
   };
-
-  bundler.on('update', rebundle);
+  bundler.on( 'update', rebundle );
 
   return rebundle();
 };
 
-// this currently is broken/does nothing (will fix in future)
-gulp.task('vendor', function(){
-  return gulp.src()
-    .pipe(gulp.dest());
+var startWatch = function(files, task){
+  if ( typeof task === 'string' ){
+    gulp.start( task );
+    gulp.watch( files, [task] );
+  } else {
+    task.map( function(taskItem) {
+      gulp.start( taskItem );
+    } );
+    gulp.watch( files, task );
+  }
+};
+
+gulp.task( 'server', function( next ){
+  var server = connect();
+  server.use( connect.static( dist )).listen( port, next );
 });
 
-gulp.task('html', function(){
-  return gulp.src(htmlFiles)
-    .pipe(gulp.dest(htmlBuild));
+// this currently is broken/does nothing (will fix in future)
+gulp.task( 'vendor', function(){
+  return gulp.src()
+    .pipe( gulp.dest() );
+});
+
+gulp.task( 'html', function(){
+  return gulp.src( htmlFiles )
+    .pipe( gulp.dest( htmlBuild ));
 });
 
 
