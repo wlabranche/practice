@@ -15,6 +15,15 @@ var soure = require('vinyl-source-stream');
 var dist = 'dist';
 
 var htmlFiles = 'app/**/*.html';
+var htmlBuild = dist;
 
 var jsxFiles = 'app/jsx/**/*.jsx';
 
+// create paths
+
+
+// this currently is broken/does nothing (will fix in future)
+gulp.task('vendor', function(){
+  return gulp.src()
+    .pipe();
+});
